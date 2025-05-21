@@ -22,25 +22,34 @@ async function startBot() {
 
   // Event koneksi
   sock.ev.on('connection.update', async (update) => {
-    const { connection, lastDisconnect } = update;
-    if (connection === 'close') {
-      const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log('Koneksi terputus, reconnecting...', shouldReconnect);
-      if (shouldReconnect) {
-        startBot();
-      } else {
-        console.log('Anda telah logout.');
-      }
-    } else if (connection === 'open') {
-      console.log('Bot Store aktif dan siap digunakan.');
+  const { connection, lastDisconnect } = update;
 
-      // Tampilkan Pairing Code hanya jika belum login
-      if (!sock.authState.creds.registered) {
-        const code = await sock.requestPairingCode('6281936513894'); // ganti dengan nomor kamu
+  if (connection === 'close') {
+    const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+    console.log('Koneksi terputus, reconnecting...', shouldReconnect);
+    if (shouldReconnect) {
+      startBot(); // reconnect
+    } else {
+      console.log('Anda telah logout.');
+    }
+
+  } else if (connection === 'connecting') {
+    console.log('Sedang menyambungkan...');
+
+  } else if (connection === 'open') {
+    console.log('Koneksi berhasil. Bot aktif.');
+
+    // Tampilkan pairing code hanya jika akun belum terdaftar/login
+    if (!sock.authState.creds.registered) {
+      try {
+        const code = await sock.requestPairingCode('6281936513894'); // Ganti dengan nomor kamu
         console.log(`Pairing Code WA (22-xxxx format): ${code}`);
+      } catch (err) {
+        console.error('Gagal mendapatkan pairing code:', err.message);
       }
     }
-  });
+  }
+});
 
   // Event pesan masuk
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
