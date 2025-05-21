@@ -20,12 +20,8 @@ async function startBot() {
 
   sock.ev.on('creds.update', saveCreds);
 
-  // Tampilkan Pairing Code
-  const code = await sock.requestPairingCode('6281936513894'); // ganti dengan nomor kamu
-  console.log(`Pairing Code WA (22-xxxx format): ${code}`);
-
   // Event koneksi
-  sock.ev.on('connection.update', (update) => {
+  sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect } = update;
     if (connection === 'close') {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
@@ -37,6 +33,12 @@ async function startBot() {
       }
     } else if (connection === 'open') {
       console.log('Bot Store aktif dan siap digunakan.');
+
+      // Tampilkan Pairing Code hanya jika belum login
+      if (!sock.authState.creds.registered) {
+        const code = await sock.requestPairingCode('6281936513894'); // ganti dengan nomor kamu
+        console.log(`Pairing Code WA (22-xxxx format): ${code}`);
+      }
     }
   });
 
