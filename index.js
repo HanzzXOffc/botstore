@@ -18,34 +18,7 @@ async function startBot() {
     auth: state,
   });
 
-  sock.ev.on('creds.update', saveCreds);
-
-  // Event koneksi
-  sock.ev.on('connection.update', async (update) => {
-  const { connection, lastDisconnect } = update;
-
-  if (connection === 'close') {
-    const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-    console.log('Koneksi terputus, reconnecting...', shouldReconnect);
-    if (shouldReconnect) {
-      startBot(); // reconnect
-    } else {
-      console.log('Anda telah logout.');
-    }
-
-  } else if (connection === 'connecting') {
-    console.log('Sedang menyambungkan...');
-
-  } else if (connection === 'open') {
-    console.log('Koneksi berhasil. Bot aktif.');
-
-    // Tampilkan pairing code hanya jika akun belum terdaftar/login
-    if (!sock.authState.creds.registered) {
-      try {
-        const code = await sock.requestPairingCode('6281936513894'); // Ganti dengan nomor kamu
-        console.log(`Pairing Code WA (22-xxxx format): ${code}`);
-      } catch (err) {
-        console.error('Gagal mendapatkan pairing code:', err.message);
+  sock.ev.on('creds.update', saveCreds); 
       }
     }
   }
